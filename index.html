@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MONSTER'• CLAN - لوحة الأعضاء الرسمية</title>
+    <!-- استدعاء خط Cairo و FontAwesome للأيقونات -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --sidebar-bg: #1e293b;
+            --card-bg: #1e293b;
+            --accent-color: #ff6b00;
+            --accent-hover: #e05e00;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --boss-color: #ec4899;
+            --leader-color: #f59e0b;
+            --co-leader-color: #3b82f6;
+            --border-color: #334155;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
+        /* شاشة الحظر والعقوبة المؤقتة */
+        #banScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #0b0f19;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .ban-box {
+            background-color: var(--card-bg);
+            border: 2px solid var(--danger-color);
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.3);
+        }
+        .ban-box i { font-size: 60px; color: var(--danger-color); margin-bottom: 20px; }
+        .ban-box h2 { font-size: 24px; color: var(--danger-color); margin-bottom: 10px; font-weight: 900; }
+        .ban-box p { color: var(--text-muted); font-size: 15px; margin-bottom: 20px; line-height: 1.6; }
+        .timer-badge {
+            background-color: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--danger-color);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        /* شريط التنقل الجانبي */
+        aside {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        .sidebar-brand {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-brand-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-brand img {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 10px rgba(255, 107, 0, 0.4);
+        }
+
+        .sidebar-brand h2 { font-size: 16px; font-weight: 900; letter-spacing: 0.5px; color: #ff8533; }
+
+        .close-sidebar-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .sidebar-menu { padding: 20px 10px; flex: 1; }
+        .menu-category { font-size: 12px; color: var(--text-muted); margin: 15px 10px 10px; font-weight: 600; text-transform: uppercase; }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 15px;
+            font-weight: 600;
+            transition: var(--transition);
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+
+        .sidebar-menu li.active a, .sidebar-menu li a:hover {
+            background-color: var(--accent-color);
+            color: #fff;
+            transform: translateX(-5px);
+        }
+
+        .sidebar-menu li a i { font-size: 18px; width: 25px; text-align: center; }
+
+        /* المحتوى الرئيسي */
+        .main-content {
+            flex: 1;
+            margin-right: 280px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: var(--transition);
+        }
+
+        /* الشريط العلوي */
+        header {
+            height: 80px;
+            background-color: var(--sidebar-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            gap: 15px;
+        }
+
+        .header-right-tools {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .menu-toggle-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        .menu-toggle-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+
+        .header-search {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 15px;
+            width: 100%;
+            max-width: 320px;
+            gap: 10px;
+        }
+
+        .header-search input {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            outline: none;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .header-search i { color: var(--text-muted); }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 10px rgba(255, 107, 0, 0.4);
+        }
+
+        .user-info h4 { font-size: 14px; font-weight: 700; }
+
+        /* حاوية محتوى الصفحة */
+        .container { padding: 20px; flex: 1; }
+
+        .content-section { display: none; }
+        .content-section.active-section {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* بطاقات الإحصائيات المتجاوبة */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover { transform: translateY(-3px); border-color: var(--accent-color); }
+        .stat-info h3 { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
+        .stat-info .number { font-size: 20px; font-weight: 900; }
+        
+        .stat-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 20px;
+        }
+        .stat-icon.boss { background-color: rgba(236, 72, 153, 0.15); color: var(--boss-color); }
+        .stat-icon.leader { background-color: rgba(245, 158, 11, 0.15); color: var(--leader-color); }
+        .stat-icon.coleader { background-color: rgba(59, 130, 246, 0.15); color: var(--co-leader-color); }
+        .stat-icon.member { background-color: rgba(16, 185, 129, 0.15); color: var(--success-color); }
+
+        /* الجداول والبطاقات */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .card-header h3 { font-size: 16px; font-weight: 700; }
+
+        .table-responsive { overflow-x: auto; width: 100%; }
+        table { width: 100%; border-collapse: collapse; text-align: right; min-width: 600px; }
+        th, td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); font-size: 13px; }
+        th { color: var(--text-muted); background-color: rgba(255, 255, 255, 0.02); font-weight: 600; }
+
+        /* شارات الرتب */
+        .rank-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .rank-badge.boss { background-color: rgba(236, 72, 153, 0.15); color: var(--boss-color); border: 1px solid rgba(236, 72, 153, 0.3); }
+        .rank-badge.leader { background-color: rgba(245, 158, 11, 0.15); color: var(--leader-color); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .rank-badge.coleader { background-color: rgba(59, 130, 246, 0.15); color: var(--co-leader-color); border: 1px solid rgba(59, 130, 246, 0.3); }
+        .rank-badge.member { background-color: rgba(16, 185, 129, 0.15); color: var(--success-color); border: 1px solid rgba(16, 185, 129, 0.3); }
+
+        /* أزرار الإجراءات */
+        .action-btns { display: flex; gap: 5px; flex-wrap: wrap; }
+        
+        .btn-action-edit, .btn-action-ban, .btn-action-delete {
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            transition: var(--transition);
+        }
+        .btn-action-edit {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: var(--co-leader-color);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .btn-action-edit:hover { background-color: var(--co-leader-color); color: #fff; }
+
+        .btn-action-ban {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: var(--warning-color);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .btn-action-ban:hover { background-color: var(--warning-color); color: #0f172a; }
+
+        .btn-action-delete {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--danger-color);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .btn-action-delete:hover { background-color: var(--danger-color); color: #fff; }
+
+        /* نماذج الإدخال */
+        .form-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text-color);
+            outline: none;
+            font-size: 13px;
+            transition: var(--transition);
+        }
+        .form-group input:focus, .form-group select:focus { border-color: var(--accent-color); }
+
+        .btn-submit {
+            margin-top: 15px;
+            background-color: var(--accent-color);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+        }
+        .btn-submit:hover { opacity: 0.9; }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            color: var(--text-muted);
+            font-size: 12px;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--sidebar-bg);
+            margin-top: auto;
+        }
+
+        /* الطبقة الشفافة عند فتح القائمة على الهواتف */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 95;
+            display: none;
+        }
+        .sidebar-overlay.active { display: block; }
+
+        /* التجاوب مع شاشات الآيباد والهواتف (Responsive Media Queries) */
+        @media (max-width: 992px) {
+            aside {
+                right: -280px;
+            }
+            aside.mobile-open {
+                right: 0;
+            }
+            .main-content {
+                margin-right: 0 !important;
+            }
+            .menu-toggle-btn {
+                display: flex;
+            }
+            .close-sidebar-btn {
+                display: block;
+            }
+        }
+
+        @media (max-width: 576px) {
+            header {
+                padding: 0 10px;
+            }
+            .container {
+                padding: 12px;
+            }
+            .user-info {
+                display: none; /* إخفاء النص الطويل بالهواتف لتوفير المساحة */
+            }
+            .card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- طبقة التعتيم الخلفية للقائمة الجانبية على الهواتف -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
+    <!-- شاشة الحظر والعقوبة المؤقتة -->
+    <div id="banScreen">
+        <div class="ban-box">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <h2>عقوبة مؤقتة - ممنوع الدخول</h2>
+            <p>لقد تم حظرك بسبب مخالفة قوانين الكلان. تم إلغاء وصولك للمشروع مؤقتاً.</p>
+            <div class="timer-badge" id="banTimerDisplay">05:00</div>
+        </div>
+    </div>
+
+    <!-- الشريط الجانبي المحمي بكلمة مرور -->
+    <aside id="appSidebar">
+        <div class="sidebar-brand">
+            <div class="sidebar-brand-info">
+                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=150&auto=format&fit=crop&q=80" alt="MONSTER'• CLAN">
+                <h2>MONSTER'• CLAN</h2>
+            </div>
+            <button class="close-sidebar-btn" onclick="toggleMobileSidebar()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <ul class="sidebar-menu">
+            <div class="menu-category">أقسام الكلان</div>
+            <li id="menu-members" class="active"><a onclick="switchSection('members', this)"><i class="fa-solid fa-users"></i><span>الأعضاء المسجلين</span></a></li>
+            <li id="menu-home"><a onclick="verifySidebarSection('home', this)"><i class="fa-solid fa-crown"></i><span>رئيسية الكلان 🔒</span></a></li>
+            <li id="menu-leaders"><a onclick="verifySidebarSection('leaders', this)"><i class="fa-solid fa-user-shield"></i><span>الزعماء والقادة 🔒</span></a></li>
+            <li id="menu-tournaments"><a onclick="verifySidebarSection('tournaments', this)"><i class="fa-solid fa-gamepad"></i><span>غرفة البطولات 🔒</span></a></li>
+        </ul>
+    </aside>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content">
+        <header>
+            <div class="header-right-tools">
+                <button class="menu-toggle-btn" onclick="toggleMobileSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="ابحث في السجلات...">
+                </div>
+            </div>
+            <div class="user-profile">
+                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=150&auto=format&fit=crop&q=80" alt="MONSTER'• CLAN">
+                <div class="user-info">
+                    <h4>MONSTER'• CLAN</h4>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            
+            <!-- 1. قسم الأعضاء المسجلين -->
+            <div id="section-members" class="content-section active-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>سجل أعضاء MONSTER'• CLAN (سحابي 🌐)</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>الاسم / اللقب</th>
+                                    <th>الرتبة</th>
+                                    <th>التاريخ</th>
+                                    <th>الحالة</th>
+                                    <th>إجراءات الأدمن</th>
+                                </tr>
+                            </thead>
+                            <tbody id="membersTableBody">
+                                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">جاري تحميل البيانات...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- نموذج التسجيل المفتوح -->
+                <div class="form-container">
+                    <div class="card-header" style="margin-bottom: 0;">
+                        <h3>تسجيل عضو جديد أو رتبة 🎮</h3>
+                    </div>
+                    <form id="registerForm" onsubmit="handlePublicRegister(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>اسمك أو لقبك (Free Fire)</label>
+                                <input type="text" id="regName" placeholder="اكتب اسمك هنا..." required>
+                            </div>
+                            <div class="form-group">
+                                <label>اختر الرتبة المطلوبة</label>
+                                <select id="regRank">
+                                    <option value="عضو">عضو الكلان (Member)</option>
+                                    <option value="نائب القائد">نائب القائد (Co-Leader)</option>
+                                    <option value="القائد">القائد (Leader)</option>
+                                    <option value="الزعماء">الزعماء (Boss)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit"><i class="fa-solid fa-user-plus"></i> تسجيل ودخول سحابي</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 2. قسم رئيسية الكلان -->
+            <div id="section-home" class="content-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>الزعماء</h3>
+                            <div class="number" id="bossCount">0</div>
+                        </div>
+                        <div class="stat-icon boss"><i class="fa-solid fa-chess-king"></i></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>القائد</h3>
+                            <div class="number" id="leaderCount">0</div>
+                        </div>
+                        <div class="stat-icon leader"><i class="fa-solid fa-crown"></i></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>نواب القائد</h3>
+                            <div class="number" id="coleaderCount">0</div>
+                        </div>
+                        <div class="stat-icon coleader"><i class="fa-solid fa-shield-halved"></i></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>الإجمالي</h3>
+                            <div class="number" id="totalCount">0</div>
+                        </div>
+                        <div class="stat-icon member"><i class="fa-solid fa-users"></i></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>إحصائيات الكلان</h3>
+                    </div>
+                    <p style="color: var(--text-muted); line-height: 1.8; font-size: 13px;">
+                        قاعدة البيانات متصلة سحابياً وتتحدث تلقائياً مع كل عملية تسجيل جديدة.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 3. قسم الزعماء والقادة -->
+            <div id="section-leaders" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>قائمة الزعماء والقادة المعتمدين</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>الاسم</th>
+                                    <th>الرتبة</th>
+                                    <th>التاريخ</th>
+                                    <th>الحالة</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leadersTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. قسم غرفة البطولات -->
+            <div id="section-tournaments" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>إدارة ونشر البطولات 🏆</h3>
+                    </div>
+                    <form id="tournamentForm" onsubmit="addTournament(event)">
+                        <div class="form-grid" style="margin-bottom: 15px;">
+                            <div class="form-group">
+                                <label>اسم البطولة</label>
+                                <input type="text" id="tName" placeholder="مثال: بطولة Free Fire" required>
+                            </div>
+                            <div class="form-group">
+                                <label>الموعد والنظام</label>
+                                <input type="text" id="tTime" placeholder="مثال: غداً 9 مساءً" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit" style="background-color: var(--success-color);"><i class="fa-solid fa-paper-plane"></i> نشر البطولة سحابياً</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>البطولات النشطة</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                           <thead>
+                                <tr>
+                                    <th>البطولة</th>
+                                    <th>الموعد</th>
+                                    <th>بواسطة</th>
+                                    <th>إجراء</th>
+                                </tr>
+                           </thead>
+                           <tbody id="tournamentsTableBody">
+                               <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">جاري التحميل...</td></tr>
+                           </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer>
+            <p>MONSTER'• CLAN &copy; 2026 - متجاوب مع جميع الأجهزة 🌐.</p>
+        </footer>
+    </div>
+
+    <!-- استدعاء Firebase والتحكم البرمجي -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCU1GKAuaavTbwMDGMwKx72hLc7aRzH9g",
+            authDomain: "monsterclan-4f918.firebaseapp.com",
+            projectId: "monsterclan-4f918",
+            storageBucket: "monsterclan-4f918.firebasestorage.app",
+            messagingSenderId: "826999098988",
+            appId: "1:826999098988:web:19bbe3df8eee86d4df8689",
+            measurementId: "G-07VHTGTSH6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const ADMIN_PASSWORD = '123';
+        const BAN_KEY = 'monster_clan_ban_until';
+
+        // دالة التحكم بإظهار وإخفاء القائمة الجانبية على الهواتف والأجهزة اللوحية
+        window.toggleMobileSidebar = function() {
+            const sidebar = document.getElementById('appSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+        };
+
+        function checkBanStatus() {
+            const banUntil = localStorage.getItem(BAN_KEY);
+            if (banUntil) {
+                const now = new Date().getTime();
+                if (now < parseInt(banUntil)) {
+                    document.getElementById('banScreen').style.display = 'flex';
+                    startBanCountdown(parseInt(banUntil));
+                } else {
+                    localStorage.removeItem(BAN_KEY);
+                }
+            }
+        }
+        checkBanStatus();
+
+        function startBanCountdown(targetTime) {
+            const timerInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = targetTime - now;
+
+                if (distance <= 0) {
+                    clearInterval(timerInterval);
+                    localStorage.removeItem(BAN_KEY);
+                    document.getElementById('banScreen').style.display = 'none';
+                    window.location.reload();
+                } else {
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    document.getElementById('banTimerDisplay').innerText = 
+                        String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0');
+                }
+            }, 1000);
+        }
+
+        window.switchSection = function(sectionId, element) {
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active-section'));
+            document.getElementById('section-' + sectionId).classList.add('active-section');
+            document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+            if (element) element.parentElement.classList.add('active');
+            
+            // إغلاق القائمة تلقائياً على الهواتف عند الضغط على أي قسم
+            if (window.innerWidth <= 992) {
+                toggleMobileSidebar();
+            }
+        };
+
+        window.verifySidebarSection = function(sectionId, element) {
+            let pwd = prompt("أدخل باسورد الأدمن للوصول إلى هذا القسم:");
+            if (pwd === ADMIN_PASSWORD) {
+                switchSection(sectionId, element);
+            } else if (pwd !== null) {
+                alert("كلمة المرور غير صحيحة!");
+            }
+        };
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.toString().replace(/[&<>"']/g, m => map[m]);
+        }
+
+        let globalMembers = [];
+        onSnapshot(collection(db, "members"), (snapshot) => {
+            const members = [];
+            snapshot.forEach((docSnap) => {
+                members.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            globalMembers = members;
+            renderMembersUI(members);
+        });
+
+        function renderMembersUI(members) {
+            const membersTbody = document.getElementById('membersTableBody');
+            const leadersTbody = document.getElementById('leadersTableBody');
+            
+            if(!membersTbody || !leadersTbody) return;
+
+            membersTbody.innerHTML = '';
+            leadersTbody.innerHTML = '';
+
+            let bossC = 0, leaderC = 0, coleaderC = 0;
+            let leadersHTML = '', membersHTML = '';
+
+            members.forEach((m) => {
+                let badgeClass = 'member', rankIcon = 'fa-user';
+                if (m.rank === 'الزعماء') { bossC++; badgeClass = 'boss'; rankIcon = 'fa-chess-king'; }
+                else if (m.rank === 'القائد') { leaderC++; badgeClass = 'leader'; rankIcon = 'fa-crown'; }
+                else if (m.rank === 'نائب القائد') { coleaderC++; badgeClass = 'coleader'; rankIcon = 'fa-shield-halved'; }
+
+                const row = `
+                    <tr>
+                        <td><strong>${escapeHtml(m.name)}</strong></td>
+                        <td><span class="rank-badge ${badgeClass}"><i class="fa-solid ${rankIcon}"></i> ${escapeHtml(m.rank)}</span></td>
+                        <td>${escapeHtml(m.date)}</td>
+                        <td><span style="color: var(--success-color); font-size: 12px;"><i class="fa-solid fa-circle-dot" style="font-size: 6px;"></i> متصل</span></td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="btn-action-edit" onclick="verifyAdminAction('edit', '${m.id}', '${escapeHtml(m.name)}', '${escapeHtml(m.rank)}')"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn-action-ban" onclick="verifyAdminAction('ban', '${m.id}', '${escapeHtml(m.name)}')"><i class="fa-solid fa-ban"></i></button>
+                                <button class="btn-action-delete" onclick="verifyAdminAction('delete', '${m.id}', '${escapeHtml(m.name)}')"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                membersHTML += row;
+                if (['الزعماء', 'القائد', 'نائب القائد'].includes(m.rank)) leadersHTML += row;
+            });
+
+            membersTbody.innerHTML = membersHTML || `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">لا توجد أسماء مسجلة.</td></tr>`;
+            leadersTbody.innerHTML = leadersHTML || `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">لا توجد قيادات مسجلة.</td></tr>`;
+
+            document.getElementById('bossCount').innerText = bossC;
+            document.getElementById('leaderCount').innerText = leaderC;
+            document.getElementById('coleaderCount').innerText = coleaderC;
+            document.getElementById('totalCount').innerText = members.length;
+        }
+
+        onSnapshot(collection(db, "tournaments"), (snapshot) => {
+            const tournaments = [];
+            snapshot.forEach((docSnap) => {
+                tournaments.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            renderTournamentsTable(tournaments);
+        });
+
+        function renderTournamentsTable(tournaments) {
+            const tbody = document.getElementById('tournamentsTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            if (tournaments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">لا توجد بطولات.</td></tr>`;
+                return;
+            }
+
+            tournaments.forEach((t) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${escapeHtml(t.name)}</strong></td>
+                        <td>${escapeHtml(t.time)}</td>
+                        <td><span class="rank-badge boss"><i class="fa-solid fa-crown"></i> الإدارة</span></td>
+                        <td><button class="btn-action-delete" onclick="verifyAdminAction('deleteTournament', '${t.id}')"><i class="fa-solid fa-trash"></i></button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.handlePublicRegister = async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const rank = document.getElementById('regRank').value;
+            const date = new Date().toLocaleDateString('ar-EG');
+
+            if (!name) return;
+
+            try {
+                await addDoc(collection(db, "members"), { name, rank, date });
+                document.getElementById('registerForm').reset();
+                alert("تم التسجيل والانضمام بنجاح سحابياً! 🚀");
+            } catch (error) {
+                alert("حدث خطأ أثناء التسجيل.");
+            }
+        };
+
+        window.addTournament = async function(e) {
+            e.preventDefault();
+            let pwd = prompt("أدخل باسورد الأدمن لنشر البطولة:");
+            if (pwd !== ADMIN_PASSWORD) {
+                alert("كلمة المرور غير صحيحة!");
+                return;
+            }
+
+            const name = document.getElementById('tName').value.trim();
+            const time = document.getElementById('tTime').value.trim();
+
+            if (!name || !time) return;
+
+            try {
+                await addDoc(collection(db, "tournaments"), { name, time });
+                document.getElementById('tournamentForm').reset();
+                alert("تم نشر البطولة بنجاح! 🏆");
+            } catch (error) {
+                alert("حدث خطأ أثناء النشر.");
+            }
+        };
+
+        window.verifyAdminAction = async function(actionType, id, currentName = '', currentRank = '') {
+            let pwd = prompt("أدخل باسورد الأدمن لتنفيذ الإجراء:");
+            if (pwd !== ADMIN_PASSWORD) {
+                if (pwd !== null) alert("كلمة المرور غير صحيحة!");
+                return;
+            }
+
+            try {
+                if (actionType === 'delete') {
+                    if (confirm(`حذف العضو (${currentName})؟`)) {
+                        await deleteDoc(doc(db, "members", id));
+                        alert("تم الحذف.");
+                    }
+                } else if (actionType === 'deleteTournament') {
+                    if (confirm("حذف هذه البطولة؟")) {
+                        await deleteDoc(doc(db, "tournaments", id));
+                        alert("تم الحذف.");
+                    }
+                } else if (actionType === 'edit') {
+                    let newName = prompt("تعديل اسم العضو:", currentName);
+                    if (newName === null) return;
+                    let newRank = prompt("تعديل الرتبة:", currentRank);
+                    if (newRank === null) return;
+
+                    await updateDoc(doc(db, "members", id), {
+                        name: newName.trim() || currentName,
+                        rank: newRank.trim() || currentRank
+                    });
+                    alert("تم التحديث!");
+                } else if (actionType === 'ban') {
+                    let banMinutes = prompt(`مدة البلوك لـ (${currentName}) بالدقائق:`, "5");
+                    if (banMinutes === null) return;
+                    let mins = parseInt(banMinutes) || 5;
+                    
+                    let banUntil = new Date().getTime() + (mins * 60 * 1000);
+                    localStorage.setItem(BAN_KEY, banUntil.toString());
+                    alert(`تم الحظر لمدة ${mins} دقائق.`);
+                    checkBanStatus();
+                }
+            } catch (error) {
+                alert("حدث خطأ أثناء التنفيذ.");
+            }
+        };
+
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const term = e.target.value.toLowerCase().trim();
+                const filtered = globalMembers.filter(m => m.name.toLowerCase().includes(term) || m.rank.toLowerCase().includes(term));
+                renderMembersUI(filtered);
+            });
+        }
+    </script>
+</body>
+</html>
